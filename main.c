@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "manager.h"
-// exceptions are needed
+
 int main(int argc, char* argv[]){
     if (argc < 4) {
         printf("Not enough arguments\n");
