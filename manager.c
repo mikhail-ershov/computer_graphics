@@ -24,7 +24,10 @@ void manageFile(char* inputFileName, char* outputFileName, int action) {
             case 4: rotatePGM_L(pgm); writePGM(outputFileName, pgm); break;
             default: printf("Incorrect action\n"); break;
         }
-        free(pgm);
+        if (pgm != NULL) {
+            free(pgm->data);
+            free(pgm);
+        }
         return;
     }
     if (strcmp(header, "P6") == 0) {
