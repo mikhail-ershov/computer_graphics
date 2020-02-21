@@ -144,6 +144,7 @@ void writePGM(char* fileName, PGM* pgm){
 	FILE* fout = fopen(fileName, "wb");
 	if (fout == NULL) {
 	    printf("Output file can't be created/rewritten\n");
+		return;
 	}
 	fprintf(fout, "%s\n%i %i\n%i\n", pgm->header, pgm->width, pgm->height, pgm->maxValue);
 	fwrite(pgm->data, 1, pgm->width * pgm->height, fout);
