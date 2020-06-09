@@ -1,5 +1,4 @@
 #include "pgm.h"
-#include <iostream>
 #include <algorithm>
 
 PGM::PGM(char* fileName) {
