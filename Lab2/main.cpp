@@ -1,4 +1,6 @@
 #include <iostream>
+#include <string>
+#include <cstdlib>
 #include "pgm.h"
 
 using namespace std;
@@ -24,7 +26,7 @@ int main(int argc, char* argv[]) {
         }
         image.print(argv[2]);
     } catch (const exception& e) {
-        cerr << e.what() << " what?\n";
+        cerr << e.what();
         return 1;
     }
     return 0;

@@ -41,12 +41,12 @@ private:
     int width, height;
     uchar maxValue;
     uchar* data;
-    void plot(Point point, double brightness, double gamma = 0);
+    void plot(Point point, double intensity, int brightness, double gamma = 0);
 public:
     explicit PGM (char* fileName);
     ~PGM();
     void print(char* fileName);
-    void drawLine(Point begin, Point end, double brightness, double thickness, double gamma = 0);
+    void drawLine(Point begin, Point end, int brightness, double thickness, double gamma = 0);
 };
 
 #endif //LAB2_PGM_H

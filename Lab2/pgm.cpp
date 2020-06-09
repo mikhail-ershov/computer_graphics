@@ -18,7 +18,7 @@ PGM::PGM(char* fileName) {
         throw std::runtime_error("Unsupported colours\n");
     }
     maxValue = (uchar) tmp;
-    if (width < 0 || height < 0) {
+    if (width <= 0 || height <= 0) {
         throw std::runtime_error("Invalid header\n");
     }
     if (fgetc(fin) == EOF) {
@@ -46,10 +46,9 @@ void PGM::print(char *fileName) {
     for (int i = 0; i < width * height; i++) {
         _max = std::max(_max, data[i]);
     }
-    std::cout << (int)_max << "\n";
 }
 
-void PGM::plot(Point point, double intensity, double brightness, double gamma) {
+void PGM::plot(Point point, double intensity, int brightness, double gamma) {
     if (point.x < 0 || point.x > width || point.y < 0 || point.y > height || brightness < 0) {
         return;
     }
@@ -63,11 +62,11 @@ void PGM::plot(Point point, double intensity, double brightness, double gamma) {
         currentBrightness = std::pow(currentBrightness, gamma);
     }
     currentBrightness *= (1.0 - intensity);
-    double relativeBrightness = brightness / 255.0;
+    double relativeBrightness = (double)brightness / 255.0;
     if (gamma == 0) {
         double decodedBrightness = relativeBrightness <= 0.04045 ?
                 relativeBrightness / 12.92 :
-                std::pow((relativeBrightness + 0.055) / 1/055, 2.4);
+                std::pow((relativeBrightness + 0.055) / 1.055, 2.4);
         currentBrightness += intensity * decodedBrightness;
         currentBrightness = currentBrightness <= 0.0031308?
                 currentBrightness * 12.92 :
@@ -88,21 +87,28 @@ bool insideRectangle(const Point& x, const Point& a, const Point& b, const Point
     Point bx = b - x;
     Point cx = c - x;
     Point dx = d - x;
-    double ab = ax^bx;
-    double bc = bx^cx;
-    double cd = cx^dx;
-    double da = dx^ax;
-    return ab * bc >= 0 && ab * cd >= 0 && ab * da >= 0;
+    double res[4] = {ax^bx, bx^cx, cx^dx, dx^ax};
+    for (int i = 0; i < 4; i++) {
+        for (int j = i + 1; j < 4; j++) {
+            if (res[i] * res[j] < 0) {
+                return false;
+            }
+        }
+    }
+    return true;
 }
 
-double calculateIntensity(const Point& x, const Point& a, const Point& b, const Point& c, const Point& d) {
+double calculateIntensity(const Point& x, const Point& a, const Point& b, const Point& c, const Point& d, bool incline) {
     if (insideRectangle(x, a, b, c, d)) {
         return 1.0;
     }
+    if (!incline) {
+        return 0.0;
+    }
     int insideRect = 0;
     int total = 0;
-    for (double i = -0.5; i <= 0.5; i+= 0.1) {
-        for (double j = -0.5; j <= 0.5; j+= 0.1) {
+    for (double i = -1.0; i <= 1.0; i+= 0.1) {
+        for (double j = -1.0; j <= 1.0; j+= 0.1) {
             if (insideRectangle(Point(x.x + i, x.y + j), a, b, c, d)) {
                 insideRect++;
             }
@@ -120,12 +126,29 @@ int max(double a, double b, double c, double d) {
     return round(std::max(std::max(a, b), std::max(c, d)));
 }
 
-void PGM::drawLine(Point begin, Point end, double brightness, double thickness, double gamma) {
+void PGM::drawLine(Point begin, Point end, int brightness, double thickness, double gamma) {
+    if (begin.x < 0 || begin.x >= width || begin.y < 0 || begin.y >= height) {
+        throw std::runtime_error("First point is out of bounds\n");
+    }
+    if (end.x < 0 || end.x >= width || end.y < 0 || end.y >= height) {
+        throw std::runtime_error("Second point is out of bounds\n");
+    }
+    if (brightness < 0 || brightness > 255) {
+        throw std::runtime_error("Invalid brightness\n");
+    }
+    if (thickness <= 0) {
+        throw std::runtime_error("Invalid thickness\n");
+    }
     Point bot1, bot2, top1, top2;
     Point vector;
     vector = {begin.y - end.y, end.x - begin.x};
+    bool incline = (vector.x != 0 && vector.y != 0);
     vector = {vector.x / vector.length(), vector.y / vector.length()};
-    Point k = vector * (thickness / 2);
+    double c = thickness / 2.0;
+    if (c < 1e-5) {
+        c = 0.0;
+    }
+    Point k = vector * c;
     bot1 = begin - k;
     bot2 = end - k;
     top1 = begin + k;
@@ -133,7 +156,7 @@ void PGM::drawLine(Point begin, Point end, double brightness, double thickness, 
     for (int i = min(bot1.x, bot2.x, top1.x, top2.x); i <= max(bot1.x, bot2.x, top1.x, top2.x); i++) {
         for (int j = min(bot1.y, bot2.y, top1.y, top2.y); j <= max(bot1.y, bot2.y, top1.y, top2.y); j++) {
             Point x(i, j);
-            plot(x, calculateIntensity(x, bot1, top1, top2, bot2), brightness, gamma);
+            plot(x, calculateIntensity(x, bot1, top1, top2, bot2, incline), brightness, gamma);
         }
     }
 }
