@@ -1,4 +1,6 @@
 #include "pgm.h"
+#include <iostream>
+#include <algorithm>
 
 PGM::PGM(char* fileName) {
     FILE* fin = fopen(fileName, "rb");
@@ -40,22 +42,45 @@ void PGM::print(char *fileName) {
     fprintf(fout, "%s\n%i %i\n%i\n", header, width, height, maxValue);
     fwrite(data, 1, width * height, fout);
     fclose(fout);
+    uchar _max = 0;
+    for (int i = 0; i < width * height; i++) {
+        _max = std::max(_max, data[i]);
+    }
+    std::cout << (int)_max << "\n";
 }
 
-void PGM::plot(Point point, double brightness, double gamma) {
+void PGM::plot(Point point, double intensity, double brightness, double gamma) {
     if (point.x < 0 || point.x > width || point.y < 0 || point.y > height || brightness < 0) {
         return;
     }
     int index = std::round(point.y * width + point.x);
+    double currentBrightness = (double)data[index] / 255;
+    if (gamma == 0) {
+        currentBrightness = currentBrightness <= 0.04045 ?
+                currentBrightness / 12.92 :
+                std::pow((currentBrightness + 0.055) / 1.055, 2.4);
+    } else {
+        currentBrightness = std::pow(currentBrightness, gamma);
+    }
+    currentBrightness *= (1.0 - intensity);
     double relativeBrightness = brightness / 255.0;
     if (gamma == 0) {
-        double encodedBrightness = relativeBrightness <= 0.0031308 ?
-                relativeBrightness * 12.92 :
-                1.055 * std::pow(relativeBrightness, 1.0 / 2.4) - 0.055;
-        data[index] = 255 * encodedBrightness;
+        double decodedBrightness = relativeBrightness <= 0.04045 ?
+                relativeBrightness / 12.92 :
+                std::pow((relativeBrightness + 0.055) / 1/055, 2.4);
+        currentBrightness += intensity * decodedBrightness;
+        currentBrightness = currentBrightness <= 0.0031308?
+                currentBrightness * 12.92 :
+                std::pow(currentBrightness, 1.0 / 2.4) * 1.055 - 0.055;
     } else {
-        data[index] = 255 * pow(relativeBrightness, 1 / gamma);
+        double decodedBrightness = pow(relativeBrightness, gamma);
+        currentBrightness += intensity * decodedBrightness;
+        currentBrightness = std::pow(currentBrightness, 1.0 / gamma);
     }
+    if (1.0 - currentBrightness < 1e-5) {
+        currentBrightness = 1.0;
+    }
+    data[index] = 255 * currentBrightness;
 }
 
 bool insideRectangle(const Point& x, const Point& a, const Point& b, const Point& c, const Point& d) {
@@ -68,6 +93,23 @@ bool insideRectangle(const Point& x, const Point& a, const Point& b, const Point
     double cd = cx^dx;
     double da = dx^ax;
     return ab * bc >= 0 && ab * cd >= 0 && ab * da >= 0;
+}
+
+double calculateIntensity(const Point& x, const Point& a, const Point& b, const Point& c, const Point& d) {
+    if (insideRectangle(x, a, b, c, d)) {
+        return 1.0;
+    }
+    int insideRect = 0;
+    int total = 0;
+    for (double i = -0.5; i <= 0.5; i+= 0.1) {
+        for (double j = -0.5; j <= 0.5; j+= 0.1) {
+            if (insideRectangle(Point(x.x + i, x.y + j), a, b, c, d)) {
+                insideRect++;
+            }
+            total++;
+        }
+    }
+    return (double)insideRect / total;
 }
 
 int min(double a, double b, double c, double d) {
@@ -91,9 +133,7 @@ void PGM::drawLine(Point begin, Point end, double brightness, double thickness, 
     for (int i = min(bot1.x, bot2.x, top1.x, top2.x); i <= max(bot1.x, bot2.x, top1.x, top2.x); i++) {
         for (int j = min(bot1.y, bot2.y, top1.y, top2.y); j <= max(bot1.y, bot2.y, top1.y, top2.y); j++) {
             Point x(i, j);
-            if (insideRectangle(x, bot1, top1, top2, bot2)) {
-                plot(x, brightness, gamma);
-            }
+            plot(x, calculateIntensity(x, bot1, top1, top2, bot2), brightness, gamma);
         }
     }
 }
