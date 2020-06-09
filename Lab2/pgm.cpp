@@ -51,12 +51,12 @@ void PGM::plot(Point point, double intensity, int brightness, double gamma) {
     if (point.x < 0 || point.x > width || point.y < 0 || point.y > height || brightness < 0) {
         return;
     }
-    int index = std::round(point.y * width + point.x);
+    int index = int(std::round(point.y)) * width + int(std::round(point.x));
     double currentBrightness = (double)data[index] / 255;
     if (gamma == 0) {
         currentBrightness = currentBrightness <= 0.04045 ?
-                currentBrightness / 12.92 :
-                std::pow((currentBrightness + 0.055) / 1.055, 2.4);
+                            currentBrightness / 12.92 :
+                            std::pow((currentBrightness + 0.055) / 1.055, 2.4);
     } else {
         currentBrightness = std::pow(currentBrightness, gamma);
     }
@@ -64,12 +64,12 @@ void PGM::plot(Point point, double intensity, int brightness, double gamma) {
     double relativeBrightness = (double)brightness / 255.0;
     if (gamma == 0) {
         double decodedBrightness = relativeBrightness <= 0.04045 ?
-                relativeBrightness / 12.92 :
-                std::pow((relativeBrightness + 0.055) / 1.055, 2.4);
+                                   relativeBrightness / 12.92 :
+                                   std::pow((relativeBrightness + 0.055) / 1.055, 2.4);
         currentBrightness += intensity * decodedBrightness;
         currentBrightness = currentBrightness <= 0.0031308?
-                currentBrightness * 12.92 :
-                std::pow(currentBrightness, 1.0 / 2.4) * 1.055 - 0.055;
+                            currentBrightness * 12.92 :
+                            std::pow(currentBrightness, 1.0 / 2.4) * 1.055 - 0.055;
     } else {
         double decodedBrightness = pow(relativeBrightness, gamma);
         currentBrightness += intensity * decodedBrightness;
@@ -98,16 +98,17 @@ bool insideRectangle(const Point& x, const Point& a, const Point& b, const Point
 }
 
 double calculateIntensity(const Point& x, const Point& a, const Point& b, const Point& c, const Point& d, bool incline) {
-    if (insideRectangle(x, a, b, c, d)) {
-        return 1.0;
-    }
     if (!incline) {
-        return 0.0;
+        if (insideRectangle(x, a, b, c, d)) {
+            return 1.0;
+        } else {
+            return 0.0;
+        }
     }
     int insideRect = 0;
     int total = 0;
-    for (double i = -1.0; i <= 1.0; i+= 0.1) {
-        for (double j = -1.0; j <= 1.0; j+= 0.1) {
+    for (double i = -0.5; i <= 0.5; i+= 0.1) {
+        for (double j = -0.5; j <= 0.5; j+= 0.1) {
             if (insideRectangle(Point(x.x + i, x.y + j), a, b, c, d)) {
                 insideRect++;
             }
@@ -115,6 +116,17 @@ double calculateIntensity(const Point& x, const Point& a, const Point& b, const 
         }
     }
     return (double)insideRect / total;
+}
+
+double calculateIntensity(const Point& x, const double& A, const double& B, const double& C) {
+    double d = std::abs(A * x.x + B * x.y + C) / std::sqrt(A * A + B * B);
+    if (d < 1e-2) {
+        d = 0.0;
+    }
+    if (d > 0.9) {
+        d = 1.0;
+    }
+    return 1.0 - d;
 }
 
 int min(double a, double b, double c, double d) {
@@ -155,7 +167,11 @@ void PGM::drawLine(Point begin, Point end, int brightness, double thickness, dou
     for (int i = std::max(0, min(bot1.x, bot2.x, top1.x, top2.x)); i <= std::min(width - 1, max(bot1.x, bot2.x, top1.x, top2.x)); i++) {
         for (int j = std::max(0, min(bot1.y, bot2.y, top1.y, top2.y)); j <= std::min(height, max(bot1.y, bot2.y, top1.y, top2.y)); j++) {
             Point x(i, j);
-            plot(x, calculateIntensity(x, bot1, top1, top2, bot2, incline), brightness, gamma);
+            if (!incline || thickness > 1.0) {
+                plot(x, calculateIntensity(x, bot1, top1, top2, bot2, incline), brightness, gamma);
+            } else {
+                plot(x, calculateIntensity(x, begin.y - end.y, end.x - begin.x, begin^end), brightness, gamma);
+            }
         }
     }
 }

@@ -33,6 +33,10 @@ struct Point{
     double operator^(const Point& point) const{
         return x * point.y - y * point.x;
     }
+
+    double operator*(const Point& point) const {
+        return x * point.x + y * point.y;
+    }
 };
 
 class PGM{
