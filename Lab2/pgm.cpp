@@ -152,8 +152,8 @@ void PGM::drawLine(Point begin, Point end, int brightness, double thickness, dou
     bot2 = end - k;
     top1 = begin + k;
     top2 = end + k;
-    for (int i = min(bot1.x, bot2.x, top1.x, top2.x); i <= max(bot1.x, bot2.x, top1.x, top2.x); i++) {
-        for (int j = min(bot1.y, bot2.y, top1.y, top2.y); j <= max(bot1.y, bot2.y, top1.y, top2.y); j++) {
+    for (int i = std::max(0, min(bot1.x, bot2.x, top1.x, top2.x)); i <= std::min(width - 1, max(bot1.x, bot2.x, top1.x, top2.x)); i++) {
+        for (int j = std::max(0, min(bot1.y, bot2.y, top1.y, top2.y)); j <= std::min(height, max(bot1.y, bot2.y, top1.y, top2.y)); j++) {
             Point x(i, j);
             plot(x, calculateIntensity(x, bot1, top1, top2, bot2, incline), brightness, gamma);
         }
