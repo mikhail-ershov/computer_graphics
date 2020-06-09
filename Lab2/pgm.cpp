@@ -98,17 +98,16 @@ bool insideRectangle(const Point& x, const Point& a, const Point& b, const Point
 }
 
 double calculateIntensity(const Point& x, const Point& a, const Point& b, const Point& c, const Point& d, bool incline) {
+    if (insideRectangle(x, a, b, c, d)) {
+        return 1.0;
+    }
     if (!incline) {
-        if (insideRectangle(x, a, b, c, d)) {
-            return 1.0;
-        } else {
-            return 0.0;
-        }
+        return 0.0;
     }
     int insideRect = 0;
     int total = 0;
-    for (double i = -0.5; i <= 0.5; i+= 0.1) {
-        for (double j = -0.5; j <= 0.5; j+= 0.1) {
+    for (double i = -0.5; i <= 0.5; i += 0.5) {
+        for (double j = -0.5; j <= 0.5; j += 0.5) {
             if (insideRectangle(Point(x.x + i, x.y + j), a, b, c, d)) {
                 insideRect++;
             }
