@@ -1,6 +1,6 @@
 #include "pgm.h"
-#include <random>
 #include <stdexcept>
+#include <iostream>
 #include <cmath>
 
 PGM::PGM(char* fileName, bool gradient, double gamma) {
@@ -26,6 +26,10 @@ PGM::PGM(char* fileName, bool gradient, double gamma) {
         throw std::runtime_error("Invalid header\n");
     }
     data = new uchar[width * height];
+    errors = new double[width * height];
+    for (int i = 0; i < width * height; i++) {
+        errors[i] = 0;
+    }
     if (!gradient) {
         fread(data, 1, width * height, fin);
         for (int i = 0; i < width * height; i++) {
@@ -114,22 +118,7 @@ double sum(double a, double b) {
     return a;
 }
 
-double correct(const double& a, const int& bit, const double& gamma) {
-    if (bit == 1) {
-        if (gamma == 0) {
-            return a - std::pow(0.5, 1.0 / 2.4);
-        } else {
-            return a - std::pow(0.5, 1.0 / gamma);
-        }
-    } else {
-        return a - 0.5;
-    }
-}
-
 void PGM::dither(int bit, int typeOfDithering, double gamma) {
-    std::random_device rd;
-    std::mt19937 mt(rd());
-    std::uniform_real_distribution<double> dist(0.0, 1.0);
     switch(typeOfDithering) {
         case 0:
             for (int i = 0; i < width * height; i++) {
@@ -147,13 +136,12 @@ void PGM::dither(int bit, int typeOfDithering, double gamma) {
             break;
         case 2:
             for (int i = 0; i < width * height; i++) {
-                double tmp = correct(dist(mt), bit, gamma);
+                double tmp = (double) rand() / (RAND_MAX - 1.) - 0.5;
                 double color = (double)data[i] / 255.0;
                 data[i] = nearestColor(sum(color, tmp) * 255, bit);
             }
             break;
         case 3:
-            errors = new double[width * height];
             for (int i = 0; i < width * height; i++) {
                 double color = (double)data[i] / 255.;
                 color = sum(color, errors[i]);
@@ -177,7 +165,6 @@ void PGM::dither(int bit, int typeOfDithering, double gamma) {
             }
             break;
         case 4:
-            errors = new double[width * height];
             for (int i = 0; i < width * height; i++) {
                 double color = (double) data[i] / 255.;
                 color = sum(color, errors[i]);
@@ -243,7 +230,6 @@ void PGM::dither(int bit, int typeOfDithering, double gamma) {
             }
             break;
         case 5:
-            errors = new double[width * height];
             for (int i = 0; i < width * height; i++) {
                 double color = (double) data[i] / 255.;
                 color = sum(color, errors[i]);
@@ -289,7 +275,6 @@ void PGM::dither(int bit, int typeOfDithering, double gamma) {
             }
             break;
         case 6:
-            errors = new double[width * height];
             for (int i = 0; i < width * height; i++) {
                 double color = (double) data[i] / 255.;
                 color = sum(color, errors[i]);
