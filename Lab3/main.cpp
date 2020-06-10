@@ -17,7 +17,7 @@ int main(int argc, char *argv[]) {
         double gamma = stod(argv[6]);
         PGM image(argv[1], gradient, gamma);
         image.dither(bit, typeOfDithering, gamma);
-        image.print(argv[2], bit, gamma);
+        image.print(argv[2], bit, gradient, gamma);
     } catch (const exception& e) {
         std::cerr << e.what();
         return 1;

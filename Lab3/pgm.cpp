@@ -46,9 +46,7 @@ PGM::PGM(char* fileName, bool gradient, double gamma) {
         }
     } else {
         for (int i = 0; i < height * width; i++) {
-            int tmp = i % width;
-            double rel = (double) tmp / width;
-            data[i] = std::min(255.0, rel * 256);
+            data[i] = (i % width) * 256 / width;
         }
     }
     if (fclose(fin) != 0) {
@@ -312,7 +310,7 @@ void PGM::dither(int bit, int typeOfDithering, double gamma) {
             for (int i = 0; i < height * width; i++) {
                 int row = i / width;
                 int col = i % width;
-                double tmp = (double) 1.0 * HalftoneMatrix[row % 4][col % 4] / 16.0 - 0.5;
+                double tmp = (double) 1.0 * HalftoneMatrix[row % 4][col % 4] / 17.0 - 0.5;
                 double color = (double)data[i] / 255.0;
                 data[i] = nearestColor(sum(color, tmp) * 255, bit);
             }
