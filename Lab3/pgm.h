@@ -17,7 +17,7 @@ private:
 public:
     explicit PGM (char* fileName, bool gradient, double gamma = 0);
     ~PGM();
-    void print(char* fileName, int bit, double gamma = 0);
+    void print(char* fileName, int bit, bool gradient, double gamma = 0);
     void dither(int bit, int typeOfDithering, double gamma = 0);
 };
 

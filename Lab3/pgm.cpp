@@ -1,5 +1,6 @@
 #include "pgm.h"
 #include <stdexcept>
+#include <set>
 #include <iostream>
 #include <cmath>
 
@@ -47,7 +48,7 @@ PGM::PGM(char* fileName, bool gradient, double gamma) {
         for (int i = 0; i < height * width; i++) {
             int tmp = i % width;
             double rel = (double) tmp / width;
-            data[i] = rel * 255;
+            data[i] = std::min(255.0, rel * 256);
         }
     }
     if (fclose(fin) != 0) {
@@ -60,21 +61,23 @@ PGM::~PGM() {
     delete[] errors;
 }
 
-void PGM::print(char *fileName, int bit, double gamma) {
+void PGM::print(char *fileName, int bit, bool gradient, double gamma) {
     FILE* fout = fopen(fileName, "wb");
     if (fout == nullptr) {
         throw std::runtime_error("File can't be opened or created\n");
     }
-    for (int i = 0; i < width * height; i++) {
-        double relativeBrightness = (double)data[i] / maxValue;
-        if (gamma == 0) {
-            relativeBrightness = relativeBrightness <= 0.0031308?
-                                 relativeBrightness * 12.92 :
-                                 std::pow(1.055 * relativeBrightness, 1 / 2.4) - 0.055;
-        } else {
-            relativeBrightness = std::pow(relativeBrightness, 1 / gamma);
+    if (!gradient) {
+        for (int i = 0; i < width * height; i++) {
+            double relativeBrightness = (double) data[i] / maxValue;
+            if (gamma == 0) {
+                relativeBrightness = relativeBrightness <= 0.0031308 ?
+                                     relativeBrightness * 12.92 :
+                                     std::pow(1.055 * relativeBrightness, 1 / 2.4) - 0.055;
+            } else {
+                relativeBrightness = std::pow(relativeBrightness, 1 / gamma);
+            }
+            data[i] = maxValue * relativeBrightness;
         }
-        data[i] = maxValue * relativeBrightness;
     }
     fprintf(fout, "%s\n%i %i\n%i\n", header, width, height, maxValue);
     fwrite(data, 1, width * height, fout);
@@ -90,8 +93,8 @@ int BayerMatrix[8][8] = {
         {34, 18, 46, 30, 33, 17, 45, 29},
         {10, 58, 6, 54, 9, 57, 5, 53},
         {42, 26, 38, 22, 41, 25, 37, 21}
-        },
-HalftoneMatrix[4][4] = {
+        };
+int HalftoneMatrix[4][4] = {
         {7, 13, 11, 4},
         {12, 16, 14, 8},
         {10, 15, 6, 2},
@@ -309,7 +312,7 @@ void PGM::dither(int bit, int typeOfDithering, double gamma) {
             for (int i = 0; i < height * width; i++) {
                 int row = i / width;
                 int col = i % width;
-                double tmp = (double)HalftoneMatrix[row % 4][col % 4] / 16 - 0.5;
+                double tmp = (double) 1.0 * HalftoneMatrix[row % 4][col % 4] / 16.0 - 0.5;
                 double color = (double)data[i] / 255.0;
                 data[i] = nearestColor(sum(color, tmp) * 255, bit);
             }
