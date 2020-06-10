@@ -129,7 +129,7 @@ void PGM::dither(int bit, int typeOfDithering, double gamma) {
             for (int i = 0; i < width * height; i++) {
                 int row = i / width;
                 int col = i % width;
-                double tmp = BayerMatrix[row % 8][col % 8] / 64;
+                double tmp = (double)BayerMatrix[row % 8][col % 8] / 64 - 0.5;
                 double color = (double)data[i] / 255.0;
                 data[i] = nearestColor(sum(color, tmp) * 255, bit);
             }
