@@ -1,13 +1,11 @@
 #include <iostream>
 #include <string>
-#include <ctime>
 #include <cstdlib>
 #include "pgm.h"
 
 using namespace std;
 
 int main(int argc, char *argv[]) {
-    srand(time(NULL));
     if (argc != 7) {
         cerr << "Invalid number of arguments\n";
         return 1;

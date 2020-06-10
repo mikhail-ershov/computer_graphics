@@ -117,9 +117,9 @@ double sum(double a, double b) {
 double correct(const double& a, const int& bit, const double& gamma) {
     if (bit == 1) {
         if (gamma == 0) {
-            return a - std::pow(0.5, 2.4);
+            return a - std::pow(0.5, 1.0 / 2.4);
         } else {
-            return a - std::pow(0.5, gamma);
+            return a - std::pow(0.5, 1.0 / gamma);
         }
     } else {
         return a - 0.5;
