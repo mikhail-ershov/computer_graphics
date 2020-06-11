@@ -2,6 +2,7 @@
 #include <stdexcept>
 #include <set>
 #include <iostream>
+#include <random>
 #include <cmath>
 
 PGM::PGM(char* fileName, bool gradient, double gamma) {
@@ -60,6 +61,7 @@ PGM::~PGM() {
 }
 
 void PGM::print(char *fileName, int bit, bool gradient, double gamma) {
+    //std::set<uchar> colors;
     FILE* fout = fopen(fileName, "wb");
     if (fout == nullptr) {
         throw std::runtime_error("File can't be opened or created\n");
@@ -77,6 +79,14 @@ void PGM::print(char *fileName, int bit, bool gradient, double gamma) {
             data[i] = maxValue * relativeBrightness;
         }
     }
+    /*for (int i = 0; i < width * height; i++) {
+        colors.insert(data[i]);
+    }
+    std::cout << colors.size() << "\n";
+    for (uchar color: colors) {
+        std::cout << (int)color << " ";
+    }
+    std::cout << std::endl;*/
     fprintf(fout, "%s\n%i %i\n%i\n", header, width, height, maxValue);
     fwrite(data, 1, width * height, fout);
     fclose(fout);
@@ -120,6 +130,9 @@ double sum(double a, double b) {
 }
 
 void PGM::dither(int bit, int typeOfDithering, double gamma) {
+    std::random_device rd;
+    std::mt19937 mt(rd());
+    std::uniform_real_distribution<double> dist(0.0, 1.0);
     switch(typeOfDithering) {
         case 0:
             for (int i = 0; i < width * height; i++) {
@@ -137,7 +150,7 @@ void PGM::dither(int bit, int typeOfDithering, double gamma) {
             break;
         case 2:
             for (int i = 0; i < width * height; i++) {
-                double tmp = (double) rand() / (RAND_MAX - 1.) - 0.5;
+                double tmp = dist(mt) - 0.5;
                 double color = (double)data[i] / 255.0;
                 data[i] = nearestColor(sum(color, tmp) * 255, bit);
             }
