@@ -1,5 +1,6 @@
 #include <stdexcept>
 #include <iostream>
+#include <algorithm>
 #include "pgm.h"
 
 PPM::PPM(char* fileName) {
@@ -55,12 +56,6 @@ void PPM::print(char *fileName) {
         delete[] dataP5;
     } else {
         fwrite(data, sizeof(Pixel), width * height, fout);
-    }
-    Pixel kek(255, 255, 255);
-    for (int i = 0; i < width * height; i++) {
-        if (data[i].first != 255 || data[i].second != 255 || data[i].third != 255) {
-            kek = data[i];
-        }
     }
     fclose(fout);
 }

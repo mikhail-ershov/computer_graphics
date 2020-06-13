@@ -23,11 +23,11 @@ int main(int argc, char* argv[]) {
                 break;
             case 2:
                 res = image.autoRGB();
-                cout << "Offset: " << res.first << " Multiplier: " << res.second << "\n";
+                cout << res.first << " " << res.second << "\n";
                 break;
             case 3:
                 res = image.autoYCbCr_601();
-                cout << "Offset: " << res.first << " Multiplier: " << res.second << "\n";
+                cout << res.first << " " << res.second << "\n";
                 break;
             default:
                 cerr << "Invalid transformation\n";
