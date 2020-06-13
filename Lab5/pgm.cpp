@@ -1,4 +1,5 @@
 #include <stdexcept>
+#include <iostream>
 #include "pgm.h"
 
 PPM::PPM(char* fileName) {
@@ -55,6 +56,12 @@ void PPM::print(char *fileName) {
     } else {
         fwrite(data, sizeof(Pixel), width * height, fout);
     }
+    Pixel kek(255, 255, 255);
+    for (int i = 0; i < width * height; i++) {
+        if (data[i].first != 255 || data[i].second != 255 || data[i].third != 255) {
+            kek = data[i];
+        }
+    }
     fclose(fout);
 }
 
@@ -63,13 +70,15 @@ PPM::~PPM() {
 }
 
 Pixel PPM::changeRGBPixel(const Pixel &pixel, const int& offset, const double& mult) {
-    return Pixel(((double)pixel.first - offset) * mult,
-            ((double)pixel.second - offset) * mult,
-            ((double)pixel.third - offset) * mult);
+    double r = std::max(std::min(((double)pixel.first - offset) * mult, 255.0), 0.0);
+    double g = std::max(std::min(((double)pixel.second - offset) * mult, 255.0), 0.0);
+    double b = std::max(std::min(((double)pixel.third - offset) * mult, 255.0), 0.0);
+    return Pixel(r, g, b);
 }
 
 Pixel PPM::changeYCbCr_601Pixel(const Pixel &pixel, const int &offset, const double&mult) {
-    return Pixel(((double)pixel.first - offset) * mult, pixel.second, pixel.third);
+    double Y = std::max(std::min(((double)pixel.first - offset) * mult, 255.0), 0.0);
+    return Pixel(Y, pixel.second, pixel.third);
 }
 
 Pixel PPM::convertYCbCr_601toRGB(const Pixel &pixel) {
@@ -92,24 +101,9 @@ Pixel PPM::convertRGBtoYCbCr_601(const Pixel &pixel) {
     double Y = 0.299 * R + 0.587 * G + 0.114 * B;
     double Cb = (B - Y) / 1.772 + 0.5;
     double Cr = (R - Y) / 1.402 + 0.5;
-    if (Y < 0) {
-        Y = 0.0;
-    }
-    if (Y > 1.0) {
-        Y = 1.0;
-    }
-    if (Cb < 0) {
-        Cb = 0.0;
-    }
-    if (Cb > 1.0) {
-        Cb = 1.0;
-    }
-    if (Cr < 0) {
-        Cr = 0.0;
-    }
-    if (Cr > 1.0) {
-        Cr = 1.0;
-    }
+    Y = std::max(std::min(Y, 1.0), 0.0);
+    Cb = std::max(std::min(Cb, 1.0), 0.0);
+    Cr = std::max(std::min(Cr, 1.0), 0.0);
 
     return Pixel(255 * Y, 255 * Cb, 255 * Cr);
 }
