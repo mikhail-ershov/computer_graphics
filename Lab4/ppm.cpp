@@ -200,9 +200,6 @@ Pixel PPM::convertRGBtoHSL(const Pixel& pixel) {
     double Cmax = std::max(std::max(R, G), B);
     double Cmin = std::min(std::min(R, G), B);
     double delta = Cmax - Cmin;
-    if (delta < 1e-5) {
-        delta = 0.0;
-    }
     double L = (Cmax + Cmin) / 2.0;
     double H, S;
     if (delta == 0) {
@@ -212,6 +209,8 @@ Pixel PPM::convertRGBtoHSL(const Pixel& pixel) {
         S = delta / (1 - std::abs(2.0 * L - 1.0));
         if (Cmax == R) {
             H = (G - B) / delta;
+            int d = (int)H / 6;
+            H -= d * 6.0;
         }
         if (Cmax == G) {
             H = (B - R) / delta + 2.0;
@@ -220,7 +219,7 @@ Pixel PPM::convertRGBtoHSL(const Pixel& pixel) {
             H = (R - G) / delta + 4;
         }
     }
-    H = std::max(std::min(H, 1.0), 0.0);
+    H = std::max(std::min(H, 6.0), 0.0);
     S = std::max(std::min(S, 1.0), 0.0);
     L = std::max(std::min(L, 1.0), 0.0);
     return Pixel((H / 6.0) * 255, S * 255, L * 255);
