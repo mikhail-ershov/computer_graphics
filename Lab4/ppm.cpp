@@ -219,9 +219,11 @@ Pixel PPM::convertRGBtoHSL(const Pixel& pixel) {
         if (Cmax == B) {
             H = (R - G) / delta + 4;
         }
-        H *= 60.0;
     }
-    return Pixel((H / 360.0) * 255, S * 255, L * 255);
+    H = std::max(std::min(H, 1.0), 0.0);
+    S = std::max(std::min(S, 1.0), 0.0);
+    L = std::max(std::min(L, 1.0), 0.0);
+    return Pixel((H / 6.0) * 255, S * 255, L * 255);
 }
 
 Pixel PPM::convertHSLtoHSV(const Pixel &pixel) {
@@ -230,6 +232,8 @@ Pixel PPM::convertHSLtoHSV(const Pixel &pixel) {
     S *= L < 0.5? L : 1 - L;
     double newS = 2 * S / (L + S);
     double newV = L + S;
+    newS = std::max(std::min(newS, 1.0), 0.0);
+    newV = std::max(std::min(newV, 1.0), 0.0);
     return Pixel(pixel.first, 255 * newS, 255 * newV);
 }
 
@@ -252,7 +256,8 @@ Pixel PPM::convertHSVtoHSL(const Pixel &pixel) {
             S = S * V / (2.0 - L * 2.0);
         }
     }
-
+    S = std::max(std::min(S, 1.0), 0.0);
+    L = std::max(std::min(L, 1.0), 0.0);
     return Pixel(pixel.first, 255 * S, 255 * L);
 };
 
@@ -289,6 +294,9 @@ Pixel PPM::convertHSLtoRGB(const Pixel &pixel) {
         G = HtoRGB(p, q, H);
         B = HtoRGB(p, q, H - 1.0/3.0);
     }
+    R = std::max(std::min(R, 1.0), 0.0);
+    G = std::max(std::min(G, 1.0), 0.0);
+    B = std::max(std::min(B, 1.0), 0.0);
     return Pixel(R * 255, G * 255, B * 255);
 }
 
@@ -307,6 +315,9 @@ Pixel PPM::convertRGBtoYCbCr_601(const Pixel &pixel) {
     double Y = 0.299 * R + 0.587 * G + 0.114 * B;
     double Cb = (B - Y) / 1.772 + 0.5;
     double Cr = (R - Y) / 1.402 + 0.5;
+    Y = std::max(std::min(Y, 1.0), 0.0);
+    Cb = std::max(std::min(Cb, 1.0), 0.0);
+    Cr = std::max(std::min(Cr, 1.0), 0.0);
     return Pixel(255 * Y, 255 * Cb, 255 * Cr);
 }
 
@@ -317,6 +328,9 @@ Pixel PPM::convertYCbCr_601toRGB(const Pixel &pixel) {
     double R = Y + 1.402 * Cr;
     double G = Y - (0.299 * 1.402 / 0.587) * Cr - (0.114 * 1.772 / 0.587) * Cb;
     double B = Y + 1.772 * Cb;
+    R = std::max(std::min(R, 1.0), 0.0);
+    G = std::max(std::min(G, 1.0), 0.0);
+    B = std::max(std::min(B, 1.0), 0.0);
     return Pixel(R * 255, G * 255, B * 255);
 }
 
@@ -327,6 +341,9 @@ Pixel PPM::convertRGBtoYCbCr_709(const Pixel &pixel) {
     double Y = 0.2126 * R + 0.7152 * G + 0.0722 * B;
     double Cb = (B - Y) / 1.8556 + 0.5;
     double Cr = (R - Y) / 1.5748 + 0.5;
+    Y = std::max(std::min(Y, 1.0), 0.0);
+    Cb = std::max(std::min(Cb, 1.0), 0.0);
+    Cr = std::max(std::min(Cr, 1.0), 0.0);
     return Pixel(Y * 255, Cb * 255, Cr * 255);
 }
 
@@ -337,6 +354,9 @@ Pixel PPM::convertYCbCr_709toRGB(const Pixel &pixel) {
     double R = Y + 1.5748 * Cr;
     double G = Y - (0.2126 * 1.5748 / 0.7152) * Cr - (0.0722 * 1.8556 / 0.7152) * Cb;
     double B = Y + 1.8556 * Cb;
+    R = std::max(std::min(R, 1.0), 0.0);
+    G = std::max(std::min(G, 1.0), 0.0);
+    B = std::max(std::min(B, 1.0), 0.0);
     return Pixel(R * 255, G * 255, B * 255);
 }
 
@@ -347,6 +367,9 @@ Pixel PPM::convertRGBtoYCoCg(const Pixel &pixel) {
     double Y = 0.25 * R + 0.5 * G + 0.25 * B;
     double Co = 0.5 * R - 0.5 * B + 0.5;
     double Cg = -0.25 * R + 0.5 * G - 0.25 * B + 0.5;
+    Y = std::max(std::min(Y, 1.0), 0.0);
+    Co = std::max(std::min(Co, 1.0), 0.0);
+    Cg = std::max(std::min(Cg, 1.0), 0.0);
     return Pixel(Y * 255, Co * 255, Cg * 255);
 }
 
@@ -357,6 +380,9 @@ Pixel PPM::convertYCoCgtoRGB(const Pixel &pixel) {
     double R = Y + Co - Cg;
     double G = Y + Cg;
     double B = Y - Co - Cg;
+    R = std::max(std::min(R, 1.0), 0.0);
+    G = std::max(std::min(G, 1.0), 0.0);
+    B = std::max(std::min(B, 1.0), 0.0);
     return Pixel(255 * R, 255 * G, 255 * B);
 }
 
