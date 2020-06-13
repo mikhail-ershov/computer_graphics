@@ -72,11 +72,19 @@ void PPM::readP5(char* fileName, int pos) {
     }
 }
 
-PPM::PPM(char *fileName1, char *fileName2, char *fileName3) {
+PPM::PPM(char *fileName, int num) {
     data = NULL;
-    readP5(fileName1, 0);
-    readP5(fileName2, 1);
-    readP5(fileName3, 2);
+    std::string in(fileName);
+    int pos = -1;
+    for (int i = in.size() - 1; i >= 0; i--) {
+        if (in[i] == '.') {
+            pos = i;
+            break;
+        }
+    }
+    readP5((char*)std::string(in.substr(0, pos) + "_1" + in.substr(pos, in.size())).c_str(), 0);
+    readP5((char*)std::string(in.substr(0, pos) + "_2" + in.substr(pos, in.size())).c_str(), 1);
+    readP5((char*)std::string(in.substr(0, pos) + "_3" + in.substr(pos, in.size())).c_str(), 2);
     strcpy(header, "P6");
 }
 
@@ -112,10 +120,18 @@ void PPM::printP5(char *fileName, int pos) {
     fclose(fout);
 }
 
-void PPM::print(char *fileName1, char *fileName2, char *fileName3) {
-    printP5(fileName1, 0);
-    printP5(fileName2, 1);
-    printP5(fileName3, 2);
+void PPM::print(char *fileName, int num) {
+    std::string in(fileName);
+    int pos = -1;
+    for (int i = in.size() - 1; i >= 0; i--) {
+        if (in[i] == '.') {
+            pos = i;
+            break;
+        }
+    }
+    printP5((char*)std::string(in.substr(0, pos) + "_1" + in.substr(pos, in.size())).c_str(), 0);
+    printP5((char*)std::string(in.substr(0, pos) + "_2" + in.substr(pos, in.size())).c_str(), 1);
+    printP5((char*)std::string(in.substr(0, pos) + "_3" + in.substr(pos, in.size())).c_str(), 2);
 }
 
 void PPM::convert(char *from, char *to) {

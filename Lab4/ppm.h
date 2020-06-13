@@ -36,10 +36,10 @@ private:
     void printP5(char* fileName, int pos);
 public:
     explicit PPM (char* fileName);
-    explicit PPM(char* fileName1, char* fileName2, char* fileName3);
+    explicit PPM(char* fileName, int num);
     ~PPM();
     void print(char* fileName);
-    void print(char* fileName1, char* fileName2, char* fileName3);
+    void print(char* fileName, int num);
     void convert(char* from, char* to);
 };
 

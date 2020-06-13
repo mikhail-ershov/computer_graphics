@@ -8,8 +8,8 @@ using namespace std;
 int main(int argc, char* argv[]) {
     char *from, *to;
     int count_in, count_out;
-    char *input1, *input2, *input3;
-    char* output1, *output2, *output3;
+    char *input;
+    char* output;
     try {
         for (int i = 0; i < argc; i++) {
             if (string(argv[i]) == "-f") {
@@ -30,55 +30,20 @@ int main(int argc, char* argv[]) {
             }
             if (string(argv[i]) == "-i" && i != argc - 1) {
                 count_in = atoi(argv[i + 1]);
-                switch (count_in) {
-                    case 1:
-                        if (i < argc - 2) {
-                            input1 = argv[i + 2];
-                        } else {
-                            cerr << "Invalid input\n";
-                            return 1;
-                        }
-                        break;
-                    case 3:
-                        if (i < argc - 4) {
-                            input1 = argv[i + 2];
-                            input2 = argv[i + 3];
-                            input3 = argv[i + 4];
-                        } else {
-                            cerr << "Invalid input\n";
-                            return 1;
-                        }
-                        break;
-                    default:
-                        cerr << "Invalid input\n";
-                        return 1;
-                        break;
+                if (i < argc - 2) {
+                    input = argv[i + 2];
+                } else {
+                    cerr << "Invalid input\n";
+                    return 1;
                 }
             }
             if (string(argv[i]) == "-o" && i != argc - 1) {
                 count_out = atoi(argv[i + 1]);
-                switch(count_out) {
-                    case 1:
-                        if (i < argc - 2) {
-                            output1 = argv[i + 2];
-                        } else {
-                            cerr << "Invalid input\n";
-                            return 1;
-                        }
-                        break;
-                    case 3:
-                        if (i < argc - 4) {
-                            output1 = argv[i + 2];
-                            output2 = argv[i + 3];
-                            output3 = argv[i + 4];
-                        } else {
-                            cerr << "Invalid input\n";
-                            return 1;
-                        }
-                        break;
-                    default:
-                        cerr << "Invalid input\n";
-                        return 1;
+                if (i < argc - 2) {
+                    output = argv[i + 2];
+                } else {
+                    cerr << "Invalid input\n";
+                    return 1;
                 }
             }
         }
@@ -92,20 +57,20 @@ int main(int argc, char* argv[]) {
     }
     try{
         if (count_in == 1) {
-            PPM image(input1);
+            PPM image(input);
             image.convert(from, to);
             if (count_out == 1) {
-                image.print(output1);
+                image.print(output);
             } else {
-                image.print(output1, output2, output3);
+                image.print(output, 3);
             }
         } else {
-            PPM image(input1, input2, input3);
+            PPM image(input, 3);
             image.convert(from, to);
             if (count_out == 1) {
-                image.print(output1);
+                image.print(output);
             } else {
-                image.print(output1, output2, output3);
+                image.print(output, 3);
             }
         }
     } catch(const exception& e) {
